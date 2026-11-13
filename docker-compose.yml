@@ -1,0 +1,53 @@
+services:
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    container_name: pdf_tool_redis
+
+  compressor:
+    build: .
+    ports:
+      # Local dev: 3076. Production host nginx uses 8001 — see docker-compose.prod.yml
+      - "127.0.0.1:${APP_HOST_PORT:-3076}:8000"
+    restart: unless-stopped
+    depends_on:
+      - redis
+    environment:
+      MAX_UPLOAD_MB: "512"
+      MAX_BULK_TOTAL_MB: "2048"
+      USE_LDAP: "true"
+      LOCAL_SUPERUSER_USERNAME: "superadmin"
+      LOCAL_SUPERUSER_PASSWORD: "ChangeMe123!"
+      LOCAL_SUPERUSER_PASSWORD_HASH: ""
+      PDF_TOOL_ADMINS: ""
+      ALLOWED_AD_USERS: ""
+      DEFAULT_ALLOWED_TOOLS: ""
+      ACCESS_CONFIG_PATH: "/tmp/pdf-compressor/access_control.json"
+      LDAP_SERVER: "ldap://10.12.0.11:389"
+      LDAP_BASE_DN: "dc=globiva,dc=com"
+      LDAP_BIND_DN: "CN=Helpdesk,OU=Service Accounts,OU=GGN418-Signature,DC=globiva,DC=com"
+      LDAP_BIND_PASSWORD: "Secure@2022"
+      LDAP_USER_ATTR: "sAMAccountName"
+      LDAP_SEARCH_FILTER: "(sAMAccountName={username})"
+      LDAP_USER_DN_TEMPLATE: "{attr}={username},{base_dn}"
+      LDAP_TIMEOUT: "10"
+      LDAP_USE_TLS: "false"
+      LDAP_USE_SSL: "false"
+      SECRET_KEY: "change-me-in-production"
+      SESSION_TYPE: "filesystem"
+      MIN_TARGET_KB: "10"
+      MAX_TARGET_KB: "10240"
+      BULK_RETENTION_SECONDS: "1800"
+      BULK_MAX_FILES: "1000"
+      COMPRESS_WORKERS: "4"
+      COMPRESS_FAST_MODE: "true"
+      COMPRESS_TOOL_TIMEOUT: "45"
+      LOG_DIR: "/tmp/pdf-compressor/logs"
+    volumes:
+      - compressor_tmp:/tmp/pdf-compressor
+    container_name: pdf_toolkit
+
+
+volumes:
+  compressor_tmp:

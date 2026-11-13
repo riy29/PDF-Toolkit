@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.docker-config/
+uploads/
+outputs/
+.venv/
+venv/
+certs/*.pem
+certs/*.crt
+certs/*.key

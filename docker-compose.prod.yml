@@ -1,0 +1,8 @@
+# Production overlay: use with docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Host nginx (deploy/nginx/pdf-tool.conf) must proxy to the same port (default 8001).
+
+services:
+  compressor:
+    ports:
+      - "127.0.0.1:8001:8000"
+    restart: unless-stopped
